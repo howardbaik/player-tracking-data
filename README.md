@@ -1,4 +1,4 @@
-# player-tracking-data
+# Player Tracking Data
 
 Exploratory analysis and feature engineering on hockey **player tracking + event data** for the [Big Data Cup 2026](https://github.com/bigdatacup/Big-Data-Cup-2026). The current focus is building a **feature-based Expected Goals (xG) model** that combines shot location, shot angle, and shooter motion (derived from tracking data) to estimate the probability that a shot becomes a goal.
 
@@ -50,6 +50,7 @@ uv run jupyter lab inspect-data.ipynb
 # or run the placeholder entry point
 uv run main.py
 ```
+
 
 ## References
 
