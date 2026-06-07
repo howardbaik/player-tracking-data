@@ -1,0 +1,10 @@
+[project]
+name = "player-tracking-data"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "great-tables>=0.21.0",
+    "matplotlib>=3.10.9",
+    "polars>=1.41.2",
+]
