@@ -7,6 +7,7 @@ dependencies = [
     "great-tables>=0.21.0",
     "matplotlib>=3.10.9",
     "polars>=1.41.2",
+    "xgboost>=3.2.0",
 ]
 
 [dependency-groups]
