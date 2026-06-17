@@ -10,4 +10,4 @@ wheels/
 .venv
 
 # Posit AI
-.positai/
+.posit/assistant/
