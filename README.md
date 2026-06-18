@@ -27,13 +27,19 @@ See [data/README.md](data/README.md) for the full column-level data dictionary a
 
 ## What's here
 
-- **[inspect-data.ipynb](inspect-data.ipynb)** — the main working notebook:
-  - Loads events, shifts, and tracking data with [Polars](https://pola.rs/).
-  - Summary tables (shot-type and shot-outcome distributions) rendered with [great-tables](https://posit-dev.github.io/great-tables/).
-  - Shot-location visualization on a rink diagram (matplotlib).
-  - Feature engineering for the xG model: normalized shot coordinates, distance/angle to net, and shooter speed at the moment of release (matching each shot event to its tracking frame on Period + Team + Jersey number).
+- **[feature-based-expected-goals.ipynb](feature-based-expected-goals.ipynb)** — the main working notebook, end to end from raw data to a trained xG model. Code behind the *[Feature-Based Expected Goals (xG)](https://passthepuck.dev/posts/feature-based-xg/)* blog post.
+  - **Load** — reads every game's Events and Tracking files directly from the Big Data Cup 2026 release (no local download) with [Polars](https://pola.rs/), tagging each row with a `Game` id so shot↔tracking joins don't cross-match between games.
+  - **Explore** — shot-type and shot-outcome distributions as [great-tables](https://posit-dev.github.io/great-tables/) summary tables, plus a shot-location rink diagram (matplotlib) colored by shot angle and shaped by outcome.
+  - **Feature engineering** — six groups of per-shot features, joined into one table on `shot_id`:
+    - *Shot Location* — shot angle, meridian distance (`d_m`), and distance to net, on coordinates normalized to a single attacking side.
+    - *Shooter Motion* — shooter speed at release (player closest to the shot, from tracking).
+    - *Pressure* — distance to the closest and second-closest defenders.
+    - *Pre-Shot Movement* — time since the puck crossed the meridian, where it crossed, and average puck speed in the second before the shot.
+    - *Traffic* — total occlusion (density of traffic in the shooting lane).
+    - *Goaltender Positioning* — angle discrepancy and goaltender depth.
+  - **Model** — an [XGBoost](https://xgboost.readthedocs.io/) classifier evaluated with `StratifiedGroupKFold` (5-fold, grouped by game) out-of-fold predictions, scored on log loss, Brier score, and ROC AUC against a base-rate baseline.
+  - **Interpret** — [SHAP](https://shap.readthedocs.io/) feature importance (mean |SHAP value|) and dependence plots.
 - **[camera_orientations.csv](camera_orientations.csv)** — goalie-side index used to normalize shot coordinates onto a single attacking side.
-- **[main.py](main.py)** — placeholder entry point.
 
 ## Setup
 
@@ -43,13 +49,7 @@ This project uses [uv](https://docs.astral.sh/uv/) and Python ≥ 3.13.
 uv sync          # create the virtualenv and install dependencies
 ```
 
-Then open the notebook:
-
-```bash
-uv run jupyter lab inspect-data.ipynb
-# or run the placeholder entry point
-uv run main.py
-```
+The notebook fetches the data straight from the Big Data Cup 2026 release, so no local `data/` download is needed to run it.
 
 
 ## References
