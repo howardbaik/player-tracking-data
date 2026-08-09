@@ -27,7 +27,7 @@ See [data/README.md](data/README.md) for the full column-level data dictionary a
 
 ## What's here
 
-- **[feature-based-expected-goals.ipynb](feature-based-expected-goals.ipynb)** — the main working notebook, end to end from raw data to a trained xG model. Code behind the *[Feature-Based Expected Goals (xG)](https://passthepuck.dev/posts/feature-based-xg/)* blog post.
+- **[feature-based-xg/feature-based-expected-goals.ipynb](feature-based-xg/feature-based-expected-goals.ipynb)** — the main working notebook, end to end from raw data to a trained xG model. Code behind the *[Feature-Based Expected Goals (xG)](https://passthepuck.dev/posts/feature-based-xg/)* blog post.
   - **Load** — reads every game's Events and Tracking files directly from the Big Data Cup 2026 release (no local download) with [Polars](https://pola.rs/), tagging each row with a `Game` id so shot↔tracking joins don't cross-match between games.
   - **Explore** — shot-type and shot-outcome distributions as [great-tables](https://posit-dev.github.io/great-tables/) summary tables, plus a shot-location rink diagram (matplotlib) colored by shot angle and shaped by outcome.
   - **Feature engineering** — six groups of per-shot features, joined into one table on `shot_id`:
@@ -39,6 +39,10 @@ See [data/README.md](data/README.md) for the full column-level data dictionary a
     - *Goaltender Positioning* — angle discrepancy and goaltender depth.
   - **Model** — an [XGBoost](https://xgboost.readthedocs.io/) classifier evaluated with `StratifiedGroupKFold` (5-fold, grouped by game) out-of-fold predictions, scored on log loss, Brier score, and ROC AUC against a base-rate baseline.
   - **Interpret** — [SHAP](https://shap.readthedocs.io/) feature importance (mean |SHAP value|) and dependence plots.
+- **[graph-based-xg/graph-based-expected-goals.ipynb](graph-based-xg/graph-based-expected-goals.ipynb)** — the graph-based alternative from Section 2.5 of the thesis. Instead of hand-crafting pressure and traffic, it encodes the instantaneous game state as a graph and lets a network learn those concepts from the data. Carries the same load / explore / feature-engineering sections as above, then adds:
+  - **Graph construction** — one node for the puck and one per tracked player, each carrying location, velocity, distance and angle to the offensive goal, distance to the puck, and binary shooter/offense/goaltender flags. Graphs are fully connected, with pairwise distance as the single edge feature, and every graph is rotated into a canonical attack-right frame so the network isn't shown mirror images of the same game state.
+  - **Model** — a Graph Attention Network ([PyTorch Geometric](https://pytorch-geometric.readthedocs.io/)): graph attentional layers → global mean pooling → dropout → a single output. Pooling is permutation-invariant, so the model needs no fixed player ordering and accepts however many players were tracked.
+  - **Ablation study** — eight graph representations (adding offensive skaters, defensive skaters, and the defensive goaltender to a puck + shooter baseline), each evaluated with repeated stratified group 5-fold cross-validation on log loss, Brier score, AUC, and ECE.
 - **[camera_orientations.csv](camera_orientations.csv)** — goalie-side index used to normalize shot coordinates onto a single attacking side.
 
 ## Setup
